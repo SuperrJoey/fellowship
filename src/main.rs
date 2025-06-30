@@ -12,8 +12,7 @@ use solana_sdk::signature::{Keypair, Signer};
 use solana_sdk::pubkey::Pubkey;
 
 use spl_token::instruction as token_instruction;
-
-// Base64 for encoding instruction data  
+ 
 use base64::prelude::*;
 
 use std::str::FromStr;
@@ -88,9 +87,6 @@ async fn generate_keypair() -> Result<Json<SuccessResponse>, (StatusCode, Json<E
         )),
     }
 }
-
-// Handler function for POST /token/create
-// This function creates an SPL token initialize mint instruction
 async fn create_token(
     ExtractJson(request): ExtractJson<CreateTokenRequest>
 ) -> Result<Json<CreateTokenResponse>, (StatusCode, Json<ErrorResponse>)> {
@@ -118,13 +114,12 @@ async fn create_token(
         ))
     };
     
-    // Step 2: Create the SPL Token initialize mint instruction
     let instruction = match token_instruction::initialize_mint(
         &spl_token::id(),           // SPL Token program ID
-        &mint,                      // Mint account
-        &mint_authority,            // Mint authority
-        None,                       // Freeze authority (optional)
-        request.decimals,           // Number of decimals
+        &mint,                      
+        &mint_authority,            
+        None,                     
+        request.decimals,           
     ) {
         Ok(instruction) => instruction,
         Err(_) => return Err((
@@ -135,11 +130,9 @@ async fn create_token(
             })
         ))
     };
-    
-    // Step 3: Convert instruction data to base64
+     
     let instruction_data = BASE64_STANDARD.encode(&instruction.data);
     
-    // Step 4: Convert accounts to our format
     let accounts: Vec<AccountInfo> = instruction.accounts
         .iter()
         .map(|account| AccountInfo {
@@ -148,8 +141,7 @@ async fn create_token(
             is_writable: account.is_writable,
         })
         .collect();
-    
-    // Step 5: Create and return the response
+        
     let response = CreateTokenResponse {
         success: true,
         data: TokenInstructionData {
@@ -170,7 +162,7 @@ async fn main() {
         .route("/token/create", post(create_token));
 
         let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-        println!("Running on http://{}", addr);
+        println!(" Server running on http://{}", addr);
 
         let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
         axum::serve(listener, app).await.unwrap();
